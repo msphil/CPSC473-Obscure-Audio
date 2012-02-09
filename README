@@ -1,0 +1,16 @@
+Obscure Audio
+CSU Fullerton, CPSC473, Spring 2012
+Internet Polls with Ruby, Sinatra, and Redis
+
+Team:
+  Junyi Feng
+  Lisa Giss
+  Toms Linnes
+  Aakash Juneja
+  Mrunal Patel
+  Michael Phillips
+
+This is our Ruby+Sinatra+Redis assignment, which is to implement a 
+basic Internet poll creation site with the aforementioned tools.
+
+
