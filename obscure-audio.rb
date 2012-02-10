@@ -13,7 +13,7 @@ require 'redis'
 
 configure do
   REDIS = Redis.new
-  REDIS.setnx 'key', 10 * 36**4 # start with a0000
+  REDIS.setnx 'next', 10 * 36**4 # start with a0000
 end
 
 get '/' do
@@ -23,26 +23,23 @@ end
 
 get '/create' do
   # create poll with new hash here
-
-  @numquestions = params[:numquestions].to_i
-  if @numquestions < 1
-    erb :create
-  else
-    erb :create2
-  end
+  erb :create
 end
 
-#post '/create:numquestions' do
-#  @numquestions = params[:numquestions]
-#  erb :create2
-#end
+post '/create' do
+  @numquestions = params[:numquestions].to_i
+  @numanswers = params[:numanswers].to_i
+  erb :create2
+end
 
 post '/finalize' do
   # storing poll goes here
-  @key = REDIS.get('key').to_i
-  @key += random 10 # new key
-  REDIS.set 'key', @key.to_s(36)
-  erb :final
+  @hp = request.host_with_port
+  @next = REDIS.get('next').to_i
+  @key = @next.to_s(36)
+  @next += rand(10) + 1 # new key
+  REDIS.set 'next', @next.to_s
+  erb :finalize
 end
 
 get '/poll' do
@@ -104,9 +101,12 @@ __END__
     <title>Obscure Audio Internet Poll Creator</title>
   </head>
   <body>
-    <form>
-      Number of questions: 
-        <input type="text" name="numquestions">
+    <form method="POST">
+      <p>Number of questions: 
+        <input type="text" name="numquestions" /></p>
+      <p>Number of answers per question: 
+        <input type="text" name="numanswers" /></p>
+      <input type="submit" />
     </form>
   </body>
 </html>
@@ -118,15 +118,20 @@ __END__
     <title>Obscure Audio Internet Poll Creator</title>
   </head>
   <body>
-    <form>
+    <form method="POST" action="/finalize">
       <p>Poll Question:
-        <input type="text" name="question" size="40">
+        <input type="text" name="question" size="40" />
       </p>
       <% 1.upto(@numquestions) { |i|  %>
         <p>Question <%= i %>:
-          <input type="text" name="question<%= i %>" size="40">
+          <input type="text" name="q<%= i %>" size="40" /><br>
+          <% 1.upto(@numanswers) { |j|  %>
+            Q<%= i %>, Answer <%= j %>
+            <input type="text" name="q<%= i %>a<%= j %>" size="40" /><br>
+          <% } %>
         </p>
       <% } %>
+      <input type="submit" />
     </form>
   </body>
 </html>
@@ -138,7 +143,7 @@ __END__
     <title>Obscure Audio Internet Poll Creator</title>
   </head>
   <body>
-    <p>You created poll <%= @key %>, which may be accessed <a href="http://<%= @hp =>/poll/<%= @key %>">here</a>.
+    <p>You created poll <%= @key %>, which may be accessed <a href="http://<%= @hp %>/poll/<%= @key %>">here</a>.
   </body>
 </html>
 
