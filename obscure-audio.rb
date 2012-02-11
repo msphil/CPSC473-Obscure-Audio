@@ -6,7 +6,6 @@ require 'redis'
 # TODO:
 #   Break pages out into views
 #   Fancier main page
-#   Form for poll entry
 #   Poll display
 #   Poll results
 #   Tidy up page displays
@@ -14,6 +13,14 @@ require 'redis'
 configure do
   REDIS = Redis.new
   REDIS.setnx 'next', 10 * 36**4 # start with a0000
+end
+
+# cheesy temporary hack to allow clearing of database
+# TODO
+#   ** REMOVE BEFORE DEPLOYMENT **
+get '/flushdb' do
+  REDIS.flushdb
+  "Flushed!  (Hope there wasn't anything important there!)"
 end
 
 get '/' do
@@ -39,7 +46,38 @@ post '/finalize' do
   @key = @next.to_s(36)
   @next += rand(10) + 1 # new key
   REDIS.set 'next', @next.to_s
-  erb :finalize
+
+  poll = Hash.new # new hash, this will be stored in REDIS
+  topic = params[:topic]
+  if topic
+    @msg = "We have a topic!"
+    # this means we have some form data
+    poll[:topic] = topic
+    REDIS.hset "poll:#{@key}", "topic", topic
+    i = 1
+    qsym = ("q"+i.to_s).to_sym
+    while params[qsym]
+      poll[qsym] = params[qsym]
+      REDIS.hset "poll:#{@key}", qsym.to_s, params[qsym]
+      j = 1
+      asym = (qsym.to_s+"a"+j.to_s).to_sym
+      while params[asym]
+        poll[asym] = params[asym]
+        REDIS.hset "poll:#{@key}", asym.to_s, params[asym]
+        j += 1
+        asym = (qsym.to_s+"a"+j.to_s).to_sym
+      end
+      i += 1
+      qsym = ("q"+i.to_s).to_sym
+    end
+    @msg2 = poll[:q2a3]
+    @msg3 = (params.methods.map { |e| e.to_s + " " })
+    @msg4 = (request.env.map { |e| e.to_s + " " })
+    @msg5 = (request.methods.map { |e| e.to_s + " " })
+    erb :finalize
+  else
+    erb :finalerror
+  end
 end
 
 get '/poll' do
@@ -51,9 +89,13 @@ end
 
 get '/poll/:poll' do
   # retrieve poll 'poll' and display for a visitor to take
-  #
-  # placeholder:
-  erb :index
+  @poll = :poll
+  @pollhash = REDIS.hgetall "poll:#{@poll}"
+  if @pollhash
+    erb :takepoll
+  else
+    erb :errorpoll
+  end
 end
 
 get '/results/:poll' do
@@ -119,8 +161,8 @@ __END__
   </head>
   <body>
     <form method="POST" action="/finalize">
-      <p>Poll Question:
-        <input type="text" name="question" size="40" />
+      <p>Poll Topic:
+        <input type="text" name="topic" size="40" />
       </p>
       <% 1.upto(@numquestions) { |i|  %>
         <p>Question <%= i %>:
@@ -144,6 +186,45 @@ __END__
   </head>
   <body>
     <p>You created poll <%= @key %>, which may be accessed <a href="http://<%= @hp %>/poll/<%= @key %>">here</a>.
+      <p>1: "<%= @msg %>"</p>
+      <p>2: "<%= @msg2 %>"</p>
+      <p>3: "<%= @msg3 %>"</p>
+      <p>4: "<%= @msg4 %>"</p>
+      <p>5: "<%= @msg5 %>"</p>
+  </body>
+</html>
+
+@@finalerror
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Obscure Audio Internet Poll Creator - ERROR!</title>
+  </head>
+  <body>
+    <p>The data submitted to create a poll could not be stored or was otherwise problematic.  Please try again...</p>
+  </body>
+</html>
+
+
+@@takepoll
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Obscure Audio Internet Poll Creator</title>
+  </head>
+  <body>
+    <p>Poll: '<%= @pollhash[:topic] %>'</p>
+  </body>
+</html>
+
+@@pollerror
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Obscure Audio Internet Poll Creator - ERROR!</title>
+  </head>
+  <body>
+    <p>There is no poll "<%= @poll %>" available.</p>
   </body>
 </html>
 
