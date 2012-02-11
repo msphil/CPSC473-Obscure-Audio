@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Obscure Audio Internet Poll Creator</title>
+  </head>
+  <body>
+    <h1><%= @pollhash["topic"] %></h1>
+    <form method="POST">
+    <% i = 1 %>
+    <% qstr = "q" + i.to_s %>
+    <% while @pollhash[qstr] %>
+      <p><%= @pollhash[qstr] %></p>
+      <% j = 1 %>
+      <% astr = qstr + "a" + j.to_s %>
+      <% while @pollhash[astr] %>
+        <p><input type="radio" name="<%= qstr %>" value="<%= astr %>"><%= @pollhash[astr] %></p>
+        <% j += 1 %>
+        <% astr = qstr + "a" + j.to_s %>
+      <% end %>
+      <% i += 1 %>
+      <% qstr = "q" + i.to_s %>
+    <% end %>
+    <input type="submit" />
+    </form>
+  </body>
+</html>

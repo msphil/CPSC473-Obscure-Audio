@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Obscure Audio Internet Poll Creator</title>
+  </head>
+  <body>
+    <h1><%= @pollhash["topic"] %></h1>
+    <% i = 1 %>
+    <% qstr = "q" + i.to_s %>
+    <% while @pollhash[qstr] %>
+      <p><%= @pollhash[qstr] %></p>
+      <% j = 1 %>
+      <% astr = qstr + "a" + j.to_s %>
+      <% while @pollhash[astr] %>
+        <p>-- <%= @pollhash[astr] %>: <%= @resultshash[astr] %></p>
+        <% j += 1 %>
+        <% astr = qstr + "a" + j.to_s %>
+      <% end %>
+      <% i += 1 %>
+      <% qstr = "q" + i.to_s %>
+    <% end %>
+  </body>
+</html>
