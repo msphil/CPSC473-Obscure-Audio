@@ -50,7 +50,6 @@ post '/finalize' do
   poll = Hash.new # new hash, this will be stored in REDIS
   topic = params[:topic]
   if topic
-    @msg = "We have a topic!"
     # this means we have some form data
     poll[:topic] = topic
     REDIS.hset "poll:#{@key}", "topic", topic
@@ -70,10 +69,6 @@ post '/finalize' do
       i += 1
       qsym = ("q"+i.to_s).to_sym
     end
-    @msg2 = poll[:q2a3]
-    @msg3 = (params.methods.map { |e| e.to_s + " " })
-    @msg4 = (request.env.map { |e| e.to_s + " " })
-    @msg5 = (request.methods.map { |e| e.to_s + " " })
     erb :finalize
   else
     erb :finalerror
@@ -89,12 +84,12 @@ end
 
 get '/poll/:poll' do
   # retrieve poll 'poll' and display for a visitor to take
-  @poll = :poll
+  @poll = params[:poll]
   @pollhash = REDIS.hgetall "poll:#{@poll}"
-  if @pollhash
+  if @pollhash["topic"]
     erb :takepoll
   else
-    erb :errorpoll
+    erb :pollerror
   end
 end
 
@@ -186,11 +181,6 @@ __END__
   </head>
   <body>
     <p>You created poll <%= @key %>, which may be accessed <a href="http://<%= @hp %>/poll/<%= @key %>">here</a>.
-      <p>1: "<%= @msg %>"</p>
-      <p>2: "<%= @msg2 %>"</p>
-      <p>3: "<%= @msg3 %>"</p>
-      <p>4: "<%= @msg4 %>"</p>
-      <p>5: "<%= @msg5 %>"</p>
   </body>
 </html>
 
@@ -213,7 +203,21 @@ __END__
     <title>Obscure Audio Internet Poll Creator</title>
   </head>
   <body>
-    <p>Poll: '<%= @pollhash[:topic] %>'</p>
+    <h1><%= @pollhash["topic"] %></h1>
+    <% i = 1 %>
+    <% qstr = "q" + i.to_s %>
+    <% while @pollhash[qstr] %>
+      <p><%= @pollhash[qstr] %>
+      <% j = 1 %>
+      <% astr = qstr + "a" + j.to_s %>
+      <% while @pollhash[astr] %>
+        <p>-- <%= @pollhash[astr] %>
+        <% j += 1 %>
+        <% astr = qstr + "a" + j.to_s %>
+      <% end %>
+      <% i += 1 %>
+      <% qstr = "q" + i.to_s %>
+    <% end %>
   </body>
 </html>
 
@@ -224,6 +228,7 @@ __END__
     <title>Obscure Audio Internet Poll Creator - ERROR!</title>
   </head>
   <body>
+    <p><%= @msg %>
     <p>There is no poll "<%= @poll %>" available.</p>
   </body>
 </html>
