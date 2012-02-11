@@ -4,7 +4,6 @@ require 'sinatra'
 require 'redis'
 
 # TODO:
-#   Actually be able to take polls
 #   Break pages out into views
 #   Fancier main page
 #   Tidy up page displays
@@ -91,7 +90,19 @@ get '/poll/:poll' do
 end
 
 # store the results from the poll which was just taken
-post '/poll' do
+post '/poll/:poll' do
+  @hp = request.host_with_port
+  @poll = params[:poll]
+  i = 1
+  gsym = "q" + i.to_s
+  while params[gsym]
+    result = (REDIS.hget "results:#{@poll}", params[gsym]).to_i
+    result += 1
+    REDIS.hset "results:#{@poll}", params[gsym], result.to_s
+    i += 1
+    gsym = "q" + i.to_s
+  end
+  erb :polltaken
 end
 
 get '/results/:poll' do
@@ -209,6 +220,7 @@ __END__
   </head>
   <body>
     <h1><%= @pollhash["topic"] %></h1>
+    <form method="POST">
     <% i = 1 %>
     <% qstr = "q" + i.to_s %>
     <% while @pollhash[qstr] %>
@@ -216,13 +228,27 @@ __END__
       <% j = 1 %>
       <% astr = qstr + "a" + j.to_s %>
       <% while @pollhash[astr] %>
-        <p>-- <%= @pollhash[astr] %></p>
+        <p><input type="radio" name="<%= qstr %>" value="<%= astr %>"><%= @pollhash[astr] %></p>
         <% j += 1 %>
         <% astr = qstr + "a" + j.to_s %>
       <% end %>
       <% i += 1 %>
       <% qstr = "q" + i.to_s %>
     <% end %>
+    <input type="submit" />
+    </form>
+  </body>
+</html>
+
+@@polltaken
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Obscure Audio Internet Poll Creator</title>
+  </head>
+  <body>
+    <p>Thank you!</p>
+    <p>Your answers have been added to <a href="<%= @hp %>/results/<%= @poll %>">the results</a> for this poll.</p>
   </body>
 </html>
 
@@ -233,7 +259,6 @@ __END__
     <title>Obscure Audio Internet Poll Creator - ERROR!</title>
   </head>
   <body>
-    <p><%= @msg %>
     <p>There is no poll "<%= @poll %>" available.</p>
   </body>
 </html>
@@ -270,7 +295,6 @@ __END__
     <title>Obscure Audio Internet Poll Creator - ERROR!</title>
   </head>
   <body>
-    <p><%= @msg %>
     <p>There is no poll "<%= @poll %>" available, so there are no results.</p>
   </body>
 </html>
