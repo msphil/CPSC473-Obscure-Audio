@@ -4,10 +4,9 @@ require 'sinatra'
 require 'redis'
 
 # TODO:
+#   Actually be able to take polls
 #   Break pages out into views
 #   Fancier main page
-#   Poll display
-#   Poll results
 #   Tidy up page displays
 
 configure do
@@ -28,17 +27,21 @@ get '/' do
   erb :index
 end
 
+
+# initial poll parameters page
 get '/create' do
-  # create poll with new hash here
+  # get number of questions, and answers per question
   erb :create
 end
 
+# poll creation page, using previously entered parameters
 post '/create' do
   @numquestions = params[:numquestions].to_i
   @numanswers = params[:numanswers].to_i
   erb :create2
 end
 
+# store the poll to a unique key
 post '/finalize' do
   # storing poll goes here
   @hp = request.host_with_port
@@ -63,6 +66,7 @@ post '/finalize' do
       while params[asym]
         poll[asym] = params[asym]
         REDIS.hset "poll:#{@key}", asym.to_s, params[asym]
+        REDIS.hset "results:#{@key}", asym.to_s, "0"
         j += 1
         asym = (qsym.to_s+"a"+j.to_s).to_sym
       end
@@ -75,15 +79,8 @@ post '/finalize' do
   end
 end
 
-get '/poll' do
-  # poll form goes here
-  #
-  # placeholder:
-  erb :index
-end
-
+# retrieve poll 'poll' and display for a visitor to take
 get '/poll/:poll' do
-  # retrieve poll 'poll' and display for a visitor to take
   @poll = params[:poll]
   @pollhash = REDIS.hgetall "poll:#{@poll}"
   if @pollhash["topic"]
@@ -93,11 +90,20 @@ get '/poll/:poll' do
   end
 end
 
+# store the results from the poll which was just taken
+post '/poll' do
+end
+
 get '/results/:poll' do
   # display current stats on poll 'poll'
-  #
-  # placeholder:
-  erb :index
+  @poll = params[:poll]
+  @pollhash = REDIS.hgetall "poll:#{@poll}"
+  @resultshash = REDIS.hgetall "results:#{@poll}"
+  if @pollhash["topic"]
+    erb :results
+  else
+    erb :resultserror
+  end
 end
 
 not_found do
@@ -195,7 +201,6 @@ __END__
   </body>
 </html>
 
-
 @@takepoll
 <!DOCTYPE html>
 <html>
@@ -207,11 +212,11 @@ __END__
     <% i = 1 %>
     <% qstr = "q" + i.to_s %>
     <% while @pollhash[qstr] %>
-      <p><%= @pollhash[qstr] %>
+      <p><%= @pollhash[qstr] %></p>
       <% j = 1 %>
       <% astr = qstr + "a" + j.to_s %>
       <% while @pollhash[astr] %>
-        <p>-- <%= @pollhash[astr] %>
+        <p>-- <%= @pollhash[astr] %></p>
         <% j += 1 %>
         <% astr = qstr + "a" + j.to_s %>
       <% end %>
@@ -230,6 +235,43 @@ __END__
   <body>
     <p><%= @msg %>
     <p>There is no poll "<%= @poll %>" available.</p>
+  </body>
+</html>
+
+@@results
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Obscure Audio Internet Poll Creator</title>
+  </head>
+  <body>
+    <h1><%= @pollhash["topic"] %></h1>
+    <% i = 1 %>
+    <% qstr = "q" + i.to_s %>
+    <% while @pollhash[qstr] %>
+      <p><%= @pollhash[qstr] %></p>
+      <% j = 1 %>
+      <% astr = qstr + "a" + j.to_s %>
+      <% while @pollhash[astr] %>
+        <p>-- <%= @pollhash[astr] %>: <%= @resultshash[astr] %></p>
+        <% j += 1 %>
+        <% astr = qstr + "a" + j.to_s %>
+      <% end %>
+      <% i += 1 %>
+      <% qstr = "q" + i.to_s %>
+    <% end %>
+  </body>
+</html>
+
+@@resultserror
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Obscure Audio Internet Poll Creator - ERROR!</title>
+  </head>
+  <body>
+    <p><%= @msg %>
+    <p>There is no poll "<%= @poll %>" available, so there are no results.</p>
   </body>
 </html>
 
