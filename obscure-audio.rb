@@ -4,7 +4,6 @@ require 'sinatra'
 require 'redis'
 
 # TODO:
-#   Break pages out into views
 #   Fancier main page
 #   Tidy up page displays
 
