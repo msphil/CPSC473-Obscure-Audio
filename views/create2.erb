@@ -2,8 +2,87 @@
 <html>
   <head>
     <title>Obscure Audio Internet Poll Creator</title>
+    <script type="text/javascript">
+      <!--
+      // Add new question and answer forms on demand
+      // Basic approach borrowed from
+      //   http://www.quirksmode.org/dom/domform.html
+      // but significantly enhanced with document rewriting, 
+      // Ruby integration, etc.
+      var questionCounter = <%= @numquestions %>;
+      var answerCounters = [];
+      // array is zero-indexed, but our questions are one-indexed
+      for (var i=0; i <= questionCounter; i++) {
+        answerCounters[i] = <%= @numanswers %>;
+      }
+      function moreQuestions() {
+        questionCounter++;
+        var newQuestions = document.getElementById('questionbase').cloneNode(true);
+        var newAnswers = document.getElementById('answerbase').cloneNode(true);
+        var newAnswerTarget;
+
+        newAnswers.id = "div" + "q" + questionCounter + "a";
+        newAnswers.style.display = 'block';
+
+        newQuestions.id = "div" + questionCounter;
+        newQuestions.style.display = 'block';
+        var newQuestion = newQuestions.childNodes;
+        for (var i=0;i<newQuestion.length;i++) {
+          var theName = newQuestion[i].name;
+          var theId = newQuestion[i].id;
+          if (theName) {
+            newQuestion[i].name = theName + questionCounter;
+          }
+          if (theId) {
+            if (theId == "qq") {
+              var qnum = "Question " + questionCounter + ": ";
+              newQuestion[i].innerHTML = qnum;
+              newQuestion[i].id = theId + questionCounter;
+            }
+            if (theId == "rr") {
+              newQuestion[i].id = theId + questionCounter;
+              newAnswerTarget = newQuestion[i];
+            }
+          }
+        }
+        var insertHere = document.getElementById('newquestions');
+        insertHere.parentNode.insertBefore(newQuestions,insertHere);
+        newAnswerTarget.parentNode.insertBefore(newAnswers,newAnswerTarget);
+        var newAnswerNodes = newAnswers.childNodes;
+        var answerCounter = 0;
+        for (var i=0;i<newAnswerNodes.length;i++) {
+          var theName = newAnswerNodes[i].name;
+          var theId = newAnswerNodes[i].id;
+          if (theId == "qqq") {
+            answerCounter++;
+            anum = "Q " + questionCounter + ", Answer " + answerCounter + ": ";
+            newAnswerNodes[i].innerHTML = anum;
+          }
+          if (theName) {
+            newAnswerNodes[i].name = theName + questionCounter + "a" + answerCounter;
+          }
+        }
+      }
+      // -->
+    </script>
   </head>
   <body>
+    <!-- template for question -->
+    <div id="questionbase" style="display: none">
+      <!--<input type="button" value="Remove this question" onclick="this.parentNode.parentNode.removeChild(this.parentNode);" /><br /><br />-->
+      <span id="qq">---</span>
+      <input type="text" name="q" size="40" /><br>
+      <span id="rr"></span>
+    </div>
+    <!-- template for answers -->
+    <div id="answerbase" style="display: none">
+      <!--<input type="button" value="Remove this question" onclick="this.parentNode.parentNode.removeChild(this.parentNode);" /><br /><br />-->
+      <% 1.upto(@numanswers) { |i| %>
+        <span id="qqq">&nbsp;</span>
+        <input type="text" name="q" size="40" /><br>
+      <% } %>
+    </div>
+    <!-- actual form -->
     <form method="POST" action="/finalize">
       <p>Poll Topic:
         <input type="text" name="topic" size="40" />
@@ -17,7 +96,10 @@
           <% } %>
         </p>
       <% } %>
+      <span id="newquestions"></span>
+      <input type="button" id="moreQuestionsButton" value="Add a question" onclick="moreQuestions()" />
       <input type="submit" value="Submit" />
     </form>
+    <span id="debugout"></span>
   </body>
 </html>
