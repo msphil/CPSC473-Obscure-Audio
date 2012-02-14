@@ -95,9 +95,7 @@ post '/poll/:poll' do
   i = 1
   gsym = "q" + i.to_s
   while params[gsym]
-    result = (REDIS.hget "results:#{@poll}", params[gsym]).to_i
-    result += 1
-    REDIS.hset "results:#{@poll}", params[gsym], result.to_s
+    REDIS.hincrby "results:#{@poll}", params[gsym], 1
     i += 1
     gsym = "q" + i.to_s
   end
