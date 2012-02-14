@@ -9,7 +9,8 @@
       //   http://www.quirksmode.org/dom/domform.html
       // but significantly enhanced with document rewriting, 
       // Ruby integration, etc.
-      var questionCounter = <%= @numquestions %>;
+      //var questionCounter = <%= @numquestions %>;
+      var questionCounter = 0;
       var answerCounters = [];
       // array is zero-indexed, but our questions are one-indexed
       for (var i=0; i <= questionCounter; i++) {
@@ -55,7 +56,7 @@
           var theId = newAnswerNodes[i].id;
           if (theId == "qqq") {
             answerCounter++;
-            anum = "Q " + questionCounter + ", Answer " + answerCounter + ": ";
+            anum = "Q" + questionCounter + ", Answer " + answerCounter + ": ";
             newAnswerNodes[i].innerHTML = anum;
           }
           if (theName) {
@@ -63,10 +64,19 @@
           }
         }
       }
+
+      function initialQuestions() {
+        for (var i=0;i<<%= @numquestions %>;i++) {
+          moreQuestions();
+        }
+        var addQuestionsButton = document.getElementById('moreQuestionsButton');
+        addQuestionsButton.style.display = 'block';
+      }
+
       // -->
     </script>
   </head>
-  <body>
+  <body onload="initialQuestions();">
     <!-- template for question -->
     <div id="questionbase" style="display: none">
       <!--<input type="button" value="Remove this question" onclick="this.parentNode.parentNode.removeChild(this.parentNode);" /><br /><br />-->
@@ -87,17 +97,19 @@
       <p>Poll Topic:
         <input type="text" name="topic" size="40" />
       </p>
-      <% 1.upto(@numquestions) { |i|  %>
-        <p>Question <%= i %>:
-          <input type="text" name="q<%= i %>" size="40" /><br>
-          <% 1.upto(@numanswers) { |j|  %>
-            Q<%= i %>, Answer <%= j %>
-            <input type="text" name="q<%= i %>a<%= j %>" size="40" /><br>
-          <% } %>
-        </p>
-      <% } %>
+      <noscript>
+        <% 1.upto(@numquestions) { |i|  %>
+          <p>Question <%= i %>:
+            <input type="text" name="q<%= i %>" size="40" /><br>
+            <% 1.upto(@numanswers) { |j|  %>
+              Q<%= i %>, Answer <%= j %>
+              <input type="text" name="q<%= i %>a<%= j %>" size="40" /><br>
+            <% } %>
+          </p>
+        <% } %>
+      </noscript>
       <span id="newquestions"></span>
-      <input type="button" id="moreQuestionsButton" value="Add a question" onclick="moreQuestions()" />
+      <input type="button" id="moreQuestionsButton" value="Add a question" onclick="moreQuestions()" style="display: none" />
       <input type="submit" value="Submit" />
     </form>
     <span id="debugout"></span>
