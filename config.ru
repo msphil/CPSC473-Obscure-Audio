@@ -1,3 +1,3 @@
-require 'obscure-audio.rb'
+require './obscure-audio'
 
 run Sinatra::Application
