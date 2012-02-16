@@ -1,4 +1,3 @@
-require 'ruby-gems'
 require 'sinatra'
 
 # TODO:
