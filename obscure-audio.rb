@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require 'sinatra'
 
 # TODO:
@@ -6,8 +8,13 @@ require 'sinatra'
 
 configure do
   require 'redis'
-  uri = URI.parse(ENV["REDISTOGO_URL"])
-  REDIS = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+  env = ENV["REDISTOGO_URL"]
+  if env
+    uri = URI.parse(env)
+    REDIS = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+  else
+    REDIS = Redis.new
+  end
   REDIS.setnx 'next', 10 * 36**4 # start with a0000
 end
 
