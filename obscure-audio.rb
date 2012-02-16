@@ -1,14 +1,14 @@
-#!/usr/bin/env ruby
-
+require 'ruby-gems'
 require 'sinatra'
-require 'redis'
 
 # TODO:
 #   Fancier main page
 #   Tidy up page displays
 
 configure do
-  REDIS = Redis.new
+  require 'redis'
+  uri = URI.parse(ENV("REDISTOGO_URL"])
+  REDIS = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
   REDIS.setnx 'next', 10 * 36**4 # start with a0000
 end
 
