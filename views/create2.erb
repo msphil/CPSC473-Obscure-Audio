@@ -16,14 +16,41 @@
       for (var i=0; i <= questionCounter; i++) {
         answerCounters[i] = <%= @numanswers %>;
       }
+
+      function moreAnswers(question) {
+        answerCounters[question]++;
+        answer = answerCounters[question];
+        var newAnswers = document.getElementById('answerbase').cloneNode(true);
+        var newAnswerTarget = document.getElementById("rr" + question);
+
+        newAnswers.id = "div" + "q" + question + "a" + answer;
+        newAnswers.style.display = 'block';
+
+        var newAnswer = newAnswers.childNodes;
+        for (var i=0; i < newAnswer.length; i++) {
+          var theName = newAnswer[i].name;
+          var theId = newAnswer[i].id;
+          if (theName) {
+            newAnswer[i].name = theName + question + "a" + answer;
+          }
+          if (theId) {
+            if (theId == "qqq") {
+              var anum = "Q " + question + ", Answer " + answer + ": ";
+              newAnswer[i].innerHTML = anum;
+              newAnswer[i].id = theId + question + "a" + answer;
+            }
+          }
+        }
+        var insertHere = document.getElementById("rr" + question);
+        insertHere.parentNode.insertBefore(newAnswers,insertHere);
+        newAnswerTarget.parentNode.insertBefore(newAnswers,newAnswerTarget);
+      }
+
       function moreQuestions() {
         questionCounter++;
+        answerCounters[questionCounter] = 0;
         var newQuestions = document.getElementById('questionbase').cloneNode(true);
-        var newAnswers = document.getElementById('answerbase').cloneNode(true);
         var newAnswerTarget;
-
-        newAnswers.id = "div" + "q" + questionCounter + "a";
-        newAnswers.style.display = 'block';
 
         newQuestions.id = "div" + questionCounter;
         newQuestions.style.display = 'block';
@@ -44,29 +71,21 @@
               newQuestion[i].id = theId + questionCounter;
               newAnswerTarget = newQuestion[i];
             }
+            if (theId == "ss") {
+              newQuestion[i].id = theId + questionCounter;
+              newQuestion[i].innerHTML = "<input type=\"button\" value=\"Add an answer\" onclick=\"moreAnswers(" + questionCounter + ")\" />";
+            }
           }
         }
         var insertHere = document.getElementById('newquestions');
         insertHere.parentNode.insertBefore(newQuestions,insertHere);
-        newAnswerTarget.parentNode.insertBefore(newAnswers,newAnswerTarget);
-        var newAnswerNodes = newAnswers.childNodes;
-        var answerCounter = 0;
-        for (var i=0;i<newAnswerNodes.length;i++) {
-          var theName = newAnswerNodes[i].name;
-          var theId = newAnswerNodes[i].id;
-          if (theId == "qqq") {
-            answerCounter++;
-            anum = "Q" + questionCounter + ", Answer " + answerCounter + ": ";
-            newAnswerNodes[i].innerHTML = anum;
-          }
-          if (theName) {
-            newAnswerNodes[i].name = theName + questionCounter + "a" + answerCounter;
-          }
+        for (var i=0 ; i< <%= @numanswers %> ; i++) {
+          moreAnswers(questionCounter);
         }
       }
 
       function initialQuestions() {
-        for (var i=0;i<<%= @numquestions %>;i++) {
+        for (var i=0 ; i< <%= @numquestions %> ; i++) {
           moreQuestions();
         }
         var addQuestionsButton = document.getElementById('moreQuestionsButton');
@@ -79,18 +98,15 @@
   <body onload="initialQuestions();">
     <!-- template for question -->
     <div id="questionbase" style="display: none">
-      <!--<input type="button" value="Remove this question" onclick="this.parentNode.parentNode.removeChild(this.parentNode);" /><br /><br />-->
       <span id="qq">---</span>
       <input type="text" name="q" size="40" /><br>
       <span id="rr"></span>
+      <span id="ss"></span>
     </div>
     <!-- template for answers -->
     <div id="answerbase" style="display: none">
-      <!--<input type="button" value="Remove this question" onclick="this.parentNode.parentNode.removeChild(this.parentNode);" /><br /><br />-->
-      <% 1.upto(@numanswers) { |i| %>
-        <span id="qqq">&nbsp;</span>
+        <span id="qqq">---</span>
         <input type="text" name="q" size="40" /><br>
-      <% } %>
     </div>
     <!-- actual form -->
     <form method="POST" action="/finalize">
