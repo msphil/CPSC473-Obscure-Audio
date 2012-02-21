@@ -13,4 +13,14 @@ Team:
 This is our Ruby+Sinatra+Redis assignment, which is to implement a 
 basic Internet poll creation site with the aforementioned tools.
 
+The site allows poll creation (with foreground, background, and text 
+color selection, and dynamic addition of both questions and answers),
+poll taking, and the display of poll results.
+
+A sidebar exists on all pages to allow a poll key to be entered 
+directly for either poll taking or poll results.
+
+The code is already prepared to be deployed on Heroku as well, and 
+has already been deployed at:
+    http://afternoon-fog-6263.heroku.com
 
