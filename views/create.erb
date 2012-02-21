@@ -3,14 +3,202 @@
   <head>
     <title>Obscure Audio Internet Poll Creator</title>
     <link rel="stylesheet" type="text/css" href="/obscure-audio.css" />
+    <script type="text/javascript">
+      <!--
+      // Add new question and answer forms on demand
+      // Basic approach borrowed from
+      //   http://www.quirksmode.org/dom/domform.html
+      // but significantly enhanced with document rewriting, 
+      // Ruby integration, etc.
+      //var questionCounter = <%= @numquestions %>;
+      var questionCounter = 0;
+      var answerCounters = [];
+      // array is zero-indexed, but our questions are one-indexed
+      for (var i=0; i <= questionCounter; i++) {
+        answerCounters[i] = <%= @numanswers %>;
+      }
+
+      function moreAnswers(question) {
+        answerCounters[question]++;
+        answer = answerCounters[question];
+        var newAnswers = document.getElementById('answerbase').cloneNode(true);
+        var newAnswerTarget = document.getElementById("rr" + question);
+
+        newAnswers.id = "div" + "q" + question + "a" + answer;
+        newAnswers.style.display = 'block';
+
+        var newAnswer = newAnswers.childNodes;
+        for (var i=0; i < newAnswer.length; i++) {
+          var theName = newAnswer[i].name;
+          var theId = newAnswer[i].id;
+          if (theName) {
+            newAnswer[i].name = theName + question + "a" + answer;
+          }
+          if (theId) {
+            if (theId == "qqq") {
+              var anum = "Q " + question + ", Answer " + answer + ": ";
+              newAnswer[i].innerHTML = anum;
+              newAnswer[i].id = theId + question + "a" + answer;
+            }
+          }
+        }
+        var insertHere = document.getElementById("rr" + question);
+        insertHere.parentNode.insertBefore(newAnswers,insertHere);
+        newAnswerTarget.parentNode.insertBefore(newAnswers,newAnswerTarget);
+      }
+
+      function moreQuestions() {
+        questionCounter++;
+        answerCounters[questionCounter] = 0;
+        var newQuestions = document.getElementById('questionbase').cloneNode(true);
+        var newAnswerTarget;
+
+        newQuestions.id = "div" + questionCounter;
+        newQuestions.style.display = 'block';
+        var newQuestion = newQuestions.childNodes;
+        for (var i=0;i<newQuestion.length;i++) {
+          var theName = newQuestion[i].name;
+          var theId = newQuestion[i].id;
+          if (theName) {
+            newQuestion[i].name = theName + questionCounter;
+          }
+          if (theId) {
+            if (theId == "qq") {
+              var qnum = "Question " + questionCounter + ": ";
+              newQuestion[i].innerHTML = qnum;
+              newQuestion[i].id = theId + questionCounter;
+            }
+            if (theId == "rr") {
+              newQuestion[i].id = theId + questionCounter;
+              newAnswerTarget = newQuestion[i];
+            }
+            if (theId == "ss") {
+              newQuestion[i].id = theId + questionCounter;
+              newQuestion[i].innerHTML = "<input class=\"add\" type=\"button\" value=\"Add an answer\" onclick=\"moreAnswers(" + questionCounter + ")\" />";
+            }
+          }
+        }
+        var insertHere = document.getElementById('newquestions');
+        insertHere.parentNode.insertBefore(newQuestions,insertHere);
+        for (var i=0 ; i< <%= @numanswers %> ; i++) {
+          moreAnswers(questionCounter);
+        }
+      }
+
+      function initialQuestions() {
+        for (var i=0 ; i< <%= @numquestions %> ; i++) {
+          moreQuestions();
+        }
+        var addQuestionsButton = document.getElementById('moreQuestionsButton');
+        addQuestionsButton.style.display = 'block';
+      }
+
+      function setColor(a) {
+      	if (document.colorchooser.group1[0].checked==true) {
+      	  document.getElementById('sample').style.backgroundColor = a;
+      	  document.getElementById('colorb').value = a;
+      	} else if (document.colorchooser.group1[1].checked==true) {
+      	  document.getElementById('sample').style.color = a;
+      	  document.getElementById('colort').value = a;
+      	} else if (document.colorchooser.group1[2].checked==true) {
+      	  document.getElementById('sample').style.borderColor = a;
+      	  document.getElementById('colord').value = a;
+      	}
+      }
+      // -->
+    </script>
   </head>
-  <body>
-    <form method="POST">
-      <p>Number of questions: 
-        <input type="text" name="numquestions" /></p>
-      <p>Number of answers per question: 
-        <input type="text" name="numanswers" /></p>
-      <input type="submit" value="Submit" />
+	<body onload="initialQuestions();">
+		<div id="content">
+			<div id="sidebar">
+				<div id="logo">
+				</div>
+				<div id="inputs">
+					<form method="GET" action="/poll">
+					<label>Enter your poll ID <br /> to take a poll:</label>
+					<input type="text" name="poll">
+					<input type="submit" class="subbtn">
+					</form>
+					<br />
+					<form method="GET" action="/results">
+					<label>Enter your poll ID <br /> view poll results:</label>
+					<input type="text" name="poll">
+					<input type="submit" class="subbtn">
+					</form>
+				</div>
+			</div>
+			<div id="main">
+				<div id="mainh">
+					<p>Create and share your own polls for free</p>
+					<div id="createtab">
+						<p>Create a poll</p>
+					</div>
+				</div>
+				<div id="mainc">
+    <!-- template for question -->
+    <div id="questionbase" style="display: none">
+      <span id="qq">---</span>
+      <input type="text" name="q" size="40" /><br>
+      <span id="rr"></span>
+      <span id="ss"></span>
+    </div>
+    <!-- template for answers -->
+    <div id="answerbase" style="display: none">
+        <span id="qqq">---</span>
+        <input type="text" name="q" size="40" /><br>
+    </div>
+    <!-- actual form -->
+    <form method="POST" action="/finalize">
+     	<input type="hidden" id="colorb" value="#fff" name="colorb">
+      <input type="hidden" id="colort" value="#000" name="colort">
+      <input type="hidden" id="colord" value="#000" name="colord">
+      <p>Poll Topic:
+        <input type="text" name="topic" size="40" />
+      </p>
+      <noscript>
+        <% 1.upto(@numquestions) { |i|  %>
+          <p>Question <%= i %>:
+            <input type="text" name="q<%= i %>" size="40" /><br>
+            <% 1.upto(@numanswers) { |j|  %>
+              Q<%= i %>, Answer <%= j %>
+              <input type="text" name="q<%= i %>a<%= j %>" size="40" /><br>
+            <% } %>
+          </p>
+        <% } %>
+      </noscript>
+      <span id="newquestions"></span>
+      <input type="button" id="moreQuestionsButton" class="add" value="Add a question" onclick="moreQuestions()" style="display: none" />
+      <input type="submit" value="Create Poll" />
     </form>
-  </body>
-</html>
+    <span id="debugout"></span>
+    </div>
+		<div id="editor">
+			<table><tr>
+				<td class="cc" style="background-color:#ffffff;" onClick="setColor('#ffffff');"></td><td class="cc" style="background-color:#e1e1e1;" onClick="setColor('#e1e1e1');"></td><td class="cc" style="background-color:#cccccc;" onClick="setColor('#cccccc');"></td><td class="cc" style="background-color:#b7b7b7;" onClick="setColor('#b7b7b7');"></td><td class="cc" style="background-color:#a1a1a1;" onClick="setColor('#a1a1a1');"></td><td class="cc" style="background-color:#898989;" onClick="setColor('#898989');"></td><td class="cc" style="background-color:#707070;" onClick="setColor('#707070');"></td><td class="cc" style="background-color:#555555;" onClick="setColor('#555555');"></td><td class="cc" style="background-color:#363636;" onClick="setColor('#363636');"></td><td class="cc" style="background-color:#111111;" onClick="setColor('#111111');"></td><td class="cc" style="background-color:#000000;" onClick="setColor('#000000');"></td><td class="cc" style="background-color:#c69c6d;" onClick="setColor('#c69c6d');"></td><td class="cc" style="background-color:#a67c52;" onClick="setColor('#a67c52');"></td><td class="cc" style="background-color:#8c6239;" onClick="setColor('#8c6239');"></td><td class="cc" style="background-color:#754c24;" onClick="setColor('#754c24');"></td><td class="cc" style="background-color:#603913;" onClick="setColor('#603913');"></td></tr><tr>
+				<td class="cc" style="background-color:#f69679;" onClick="setColor('#f69679');"></td><td class="cc" style="background-color:#f9ad81;" onClick="setColor('#f9ad81');"></td><td class="cc" style="background-color:#fdc689;" onClick="setColor('#fdc689');"></td><td class="cc" style="background-color:#fff799;" onClick="setColor('#fff799');"></td><td class="cc" style="background-color:#c4df9b;" onClick="setColor('#c4df9b');"></td><td class="cc" style="background-color:#a3d39c;" onClick="setColor('#a3d39c');"></td><td class="cc" style="background-color:#82ca9c;" onClick="setColor('#82ca9c');"></td><td class="cc" style="background-color:#7accc8;" onClick="setColor('#7accc8');"></td><td class="cc" style="background-color:#6dcff6;" onClick="setColor('#6dcff6');"></td><td class="cc" style="background-color:#7da7d9;" onClick="setColor('#7da7d9');"></td><td class="cc" style="background-color:#8393ca;" onClick="setColor('#8393ca');"></td><td class="cc" style="background-color:#8781bd;" onClick="setColor('#8781bd');"></td><td class="cc" style="background-color:#a186be;" onClick="setColor('#a186be');"></td><td class="cc" style="background-color:#bd8cbf;" onClick="setColor('#bd8cbf');"></td><td class="cc" style="background-color:#f49ac1;" onClick="setColor('#f49ac1');"></td><td class="cc" style="background-color:#f5989d;" onClick="setColor('#f5989d');"></td></tr><tr>
+				<td class="cc" style="background-color:#f26c4f;" onClick="setColor('#f26c4f');"></td><td class="cc" style="background-color:#f68e56;" onClick="setColor('#f68e56');"></td><td class="cc" style="background-color:#fbaf5d;" onClick="setColor('#fbaf5d');"></td><td class="cc" style="background-color:#fff568;" onClick="setColor('#fff568');"></td><td class="cc" style="background-color:#acd373;" onClick="setColor('#acd373');"></td><td class="cc" style="background-color:#7cc576;" onClick="setColor('#7cc576');"></td><td class="cc" style="background-color:#3cb878;" onClick="setColor('#3cb878');"></td><td class="cc" style="background-color:#1cbbb4;" onClick="setColor('#1cbbb4');"></td><td class="cc" style="background-color:#00bff3;" onClick="setColor('#00bff3');"></td><td class="cc" style="background-color:#448ccb;" onClick="setColor('#448ccb');"></td><td class="cc" style="background-color:#5674b9;" onClick="setColor('#5674b9');"></td><td class="cc" style="background-color:#605ca8;" onClick="setColor('#605ca8');"></td><td class="cc" style="background-color:#8560a8;" onClick="setColor('#8560a8');"></td><td class="cc" style="background-color:#a864a8;" onClick="setColor('#a864a8');"></td><td class="cc" style="background-color:#f06eaa;" onClick="setColor('#f06eaa');"></td><td class="cc" style="background-color:#f26d7d;" onClick="setColor('#f26d7d');"></td></tr><tr>
+				<td class="cc" style="background-color:#ed1c24;" onClick="setColor('#ed1c24');"></td><td class="cc" style="background-color:#f26522;" onClick="setColor('#f26522');"></td><td class="cc" style="background-color:#f7941d;" onClick="setColor('#f7941d');"></td><td class="cc" style="background-color:#fff200;" onClick="setColor('#fff200');"></td><td class="cc" style="background-color:#8dc63f;" onClick="setColor('#8dc63f');"></td><td class="cc" style="background-color:#39b54a;" onClick="setColor('#39b54a');"></td><td class="cc" style="background-color:#00a651;" onClick="setColor('#00a651');"></td><td class="cc" style="background-color:#00a99d;" onClick="setColor('#00a99d');"></td><td class="cc" style="background-color:#00aeef;" onClick="setColor('#00aeef');"></td><td class="cc" style="background-color:#0072bc;" onClick="setColor('#0072bc');"></td><td class="cc" style="background-color:#0054a6;" onClick="setColor('#0054a6');"></td><td class="cc" style="background-color:#2e3192;" onClick="setColor('#2e3192');"></td><td class="cc" style="background-color:#662d91;" onClick="setColor('#662d91');"></td><td class="cc" style="background-color:#92278f;" onClick="setColor('#92278f');"></td><td class="cc" style="background-color:#ec008c;" onClick="setColor('#ec008c');"></td><td class="cc" style="background-color:#ed145b;" onClick="setColor('#ed145b');"></td></tr><tr>
+				<td class="cc" style="background-color:#9e0b0f;" onClick="setColor('#9e0b0f');"></td><td class="cc" style="background-color:#a0410d;" onClick="setColor('#a0410d');"></td><td class="cc" style="background-color:#a3620a;" onClick="setColor('#a3620a');"></td><td class="cc" style="background-color:#aba000;" onClick="setColor('#aba000');"></td><td class="cc" style="background-color:#598527;" onClick="setColor('#598527');"></td><td class="cc" style="background-color:#197b30;" onClick="setColor('#197b30');"></td><td class="cc" style="background-color:#007236;" onClick="setColor('#007236');"></td><td class="cc" style="background-color:#00746b;" onClick="setColor('#00746b');"></td><td class="cc" style="background-color:#0076a3;" onClick="setColor('#0076a3');"></td><td class="cc" style="background-color:#004a80;" onClick="setColor('#004a80');"></td><td class="cc" style="background-color:#003471;" onClick="setColor('#003471');"></td><td class="cc" style="background-color:#1b1464;" onClick="setColor('#1b1464');"></td><td class="cc" style="background-color:#440e62;" onClick="setColor('#440e62');"></td><td class="cc" style="background-color:#630460;" onClick="setColor('#630460');"></td><td class="cc" style="background-color:#9e005d;" onClick="setColor('#9e005d');"></td><td class="cc" style="background-color:#9e0039;" onClick="setColor('#9e0039');"></td></tr><tr>
+				<td class="cc" style="background-color:#790000;" onClick="setColor('#790000');"></td><td class="cc" style="background-color:#7b2e00;" onClick="setColor('#7b2e00');"></td><td class="cc" style="background-color:#7d4900;" onClick="setColor('#7d4900');"></td><td class="cc" style="background-color:#827b00;" onClick="setColor('#827b00');"></td><td class="cc" style="background-color:#406618;" onClick="setColor('#406618');"></td><td class="cc" style="background-color:#005e20;" onClick="setColor('#005e20');"></td><td class="cc" style="background-color:#005826;" onClick="setColor('#005826');"></td><td class="cc" style="background-color:#005952;" onClick="setColor('#005952');"></td><td class="cc" style="background-color:#005b7f;" onClick="setColor('#005b7f');"></td><td class="cc" style="background-color:#003663;" onClick="setColor('#003663');"></td><td class="cc" style="background-color:#002157;" onClick="setColor('#002157');"></td><td class="cc" style="background-color:#0d004c;" onClick="setColor('#0d004c');"></td><td class="cc" style="background-color:#32004b;" onClick="setColor('#32004b');"></td><td class="cc" style="background-color:#4b0049;" onClick="setColor('#4b0049');"></td><td class="cc" style="background-color:#7b0046;" onClick="setColor('#7b0046');"></td><td class="cc" style="background-color:#7a0026;" onClick="setColor('#7a0026');"></td>
+			</tr></table>
+			<form name="colorchooser" id="chooser">
+				<input type="radio" name="group1" value="back" checked> <label>Edit background color</label><br>
+				<input type="radio" name="group1" value="text">  <label>Edit text color</label><br>
+				<input type="radio" name="group1" value="border">  <label>Edit border color</label><br>
+			</form>
+			<div id="sample" class="rc">
+				<h3>Sample Poll</h3>
+				<form id="samplef">
+					<p>Does this poll look good?</p>
+					<input type="radio" name="samp" value="back" checked> <label>It looks great!</label><br>
+					<input type="radio" name="samp" value="text">  <label>This poll looks terrible</label><br>
+					<input type="radio" name="samp" value="border">  <label>I can't decide</label><br>
+				</form>
+			</div>
+				</div>
+				<div id="footer">
+				</div>
+			</div>
+		</div>
+	</body>
+	</html>

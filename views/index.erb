@@ -5,8 +5,39 @@
     <link rel="stylesheet" type="text/css" href="/obscure-audio.css" />
   </head>
   <body>
-    <p><a href="create">Create a poll</a></p>
-    <p><a href="poll">Take a poll</a></p>
-    <p><a href="results">View poll results</a></p>
+    <div id="content">
+      <div id="sidebar">
+        <div id="logo">
+        </div>
+        <div id="inputs">
+          <form method="GET" action="/poll">
+          <label>Enter your poll ID <br /> to take a poll:</label>
+          <input type="text" name="poll">
+          <input type="submit" class="subbtn">
+          </form>
+          <br />
+          <form method="GET" action="/results">
+          <label>Enter your poll ID <br /> view poll results:</label>
+          <input type="text" name="poll">
+          <input type="submit" class="subbtn">
+          </form>
+        </div>
+      </div>
+      <div id="main">
+        <div id="mainh">
+          <p>Create and share your own polls for free</p>
+          <div id="createtab">
+            <p>Navigation</p>
+          </div>
+        </div>
+        <div id="mainc">
+          <p><a href="create">Create a poll</a></p>
+          <p><a href="poll">Take a poll</a></p>
+          <p><a href="results">View poll results</a></p>
+        </div>
+        <div id="footer">
+        </div>
+      </div>
+    </div>
   </body>
 </html>

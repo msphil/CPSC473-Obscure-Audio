@@ -4,7 +4,38 @@
     <title>Obscure Audio Internet Poll Creator</title>
     <link rel="stylesheet" type="text/css" href="/obscure-audio.css" />
   </head>
-  <body>
-    <p>You created poll <%= @key %>, which may be accessed <a href="http://<%= @hp %>/poll/<%= @key %>">here</a>.
-  </body>
-</html>
+	<body onload="initialQuestions();">
+		<div id="content">
+			<div id="sidebar">
+				<div id="logo">
+				</div>
+				<div id="inputs">
+					<form method="GET" action="/poll">
+					<label>Enter your poll ID <br /> to take a poll:</label>
+					<input type="text" name="poll">
+					<input type="submit" class="subbtn">
+					</form>
+					<br />
+					<form method="GET" action="/results">
+					<label>Enter your poll ID <br /> view poll results:</label>
+					<input type="text" name="poll">
+					<input type="submit" class="subbtn">
+					</form>
+				</div>
+			</div>
+			<div id="main">
+				<div id="mainh">
+					<p>Create and share your own polls for free</p>
+					<div id="createtab">
+						<p>Finalize poll</p>
+					</div>
+				</div>
+				<div id="mainc">
+					  <p>You created poll <%= @key %>, which may be accessed <a href="http://<%= @hp %>/poll/<%= @key %>">here</a>.
+				</div>
+				<div id="footer">
+				</div>
+			</div>
+		</div>
+	</body>
+	</html>
