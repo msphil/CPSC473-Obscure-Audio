@@ -232,6 +232,22 @@ h2 {
 	text-align:left;
 }
 
+#showresults {
+	position:relative;
+	text-align:center;
+	width:400px;
+	background-color:#fff;
+	border:3px solid #000;
+	color:#000;
+	margin:10px auto 30px auto;
+	padding:20px;
+	text-align:center;
+}
+
+#showresults ol {
+	text-align:left;
+}
+
 /* styles from http://pixelspread.com/blog/296/css-percentage-bars */
 #resultbox{width:250px;border:1px solid #000;height:17px;}
 #resultbar{background:#000;height:14px;color:#fff;text-align:right;padding:3px 0px 0px 0px;}

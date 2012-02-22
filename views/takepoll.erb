@@ -5,33 +5,33 @@
     <link rel="stylesheet" type="text/css" href="/obscure-audio.css" />
   </head>
   <body>
-		<div id="content">
-			<div id="sidebar">
-				<div id="logo">
-				</div>
-				<div id="inputs">
+    <div id="content">
+      <div id="sidebar">
+        <div id="logo">
+        </div>
+        <div id="inputs">
           <form method="GET" action="/poll">
-					<label>Enter your poll ID <br /> to take a poll:</label>
-					<input type="text" name="poll">
-					<input type="submit" class="subbtn">
-					</form>
-					<br />
-					<form method="GET" action="/results">
-					<label>Enter your poll ID <br /> view poll results:</label>
-					<input type="text" name="poll">
-					<input type="submit" class="subbtn">
-					</form>
-				</div>
-			</div>
-			<div id="main">
-				<div id="mainh">
-					<p>Create and share your own polls for free</p>
-					<div id="createtab">
-						<p>Take a poll</p>
-					</div>
-				</div>
-				<div id="mainc">
-   	<div id="takepoll" class="rc" style="background-color:<%= @pollhash["colorb"] %>; color:<%= @pollhash["colort"] %>; border-color:<%= @pollhash["colord"] %>">
+          <label>Enter your poll ID <br /> to take a poll:</label>
+          <input type="text" name="poll">
+          <input type="submit" class="subbtn">
+          </form>
+          <br />
+          <form method="GET" action="/results">
+          <label>Enter your poll ID <br /> view poll results:</label>
+          <input type="text" name="poll">
+          <input type="submit" class="subbtn">
+          </form>
+        </div>
+      </div>
+      <div id="main">
+        <div id="mainh">
+          <p>Create and share your own polls for free</p>
+          <div id="createtab">
+            <p>Take a poll</p>
+          </div>
+        </div>
+        <div id="mainc">
+     <div id="takepoll" class="rc" style="background-color:<%= @pollhash["colorb"] %>; color:<%= @pollhash["colort"] %>; border-color:<%= @pollhash["colord"] %>">
     <h2><%= @pollhash["topic"] %></h2>
     <form method="POST">
     <ol>
@@ -53,10 +53,10 @@
     <input type="submit" value="Submit" />
     </form>
     </div>
-				</div>
-				<div id="footer">
-				</div>
-			</div>
-		</div>
-	</body>
-	</html>
+        </div>
+        <div id="footer">
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>

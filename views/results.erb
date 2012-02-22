@@ -31,24 +31,28 @@
           </div>
         </div>
         <div id="mainc">
-          <h1><%= @pollhash["topic"] %></h1>
+          <div id="showresults" class="rc" style="background-color:<%= @pollhash["colorb"] %>; color:<%= @pollhash["colort"] %>; border-color:<%= @pollhash["colord"] %>">
+            <h1><%= @pollhash["topic"] %></h1>
+            <ol>
           <% i = 1 %>
           <% qstr = "q" + i.to_s %>
           <% while @pollhash[qstr] %>
-            <p><%= @pollhash[qstr] %></p>
+            <li><%= @pollhash[qstr] %>
             <% j = 1 %>
             <% astr = qstr + "a" + j.to_s %>
             <ul>
               <% while @pollhash[astr] %>
                 <% pct = ((@resultshash[astr].to_i * 100) / @totalshash[qstr].to_i).to_s + "%" %>
-                <li><%= @pollhash[astr] %>: <%= @resultshash[astr] %> (of <%= @totalshash[qstr] %>) <div id="resultbox"><div id="resultbar" style="width:<%= pct %>;"><%= pct %></div></div></li>
+                <li><%= @pollhash[astr] %>: <%= @resultshash[astr] %> (<%= pct %>) <div id="resultbox" style="border-color:<%= @pollhash["colord"] %>; solid:<%= @pollhash["colord"] %>;"><div id="resultbar" style="width:<%= pct %>; background:<%= @pollhash["colort"] %>; color:<%= @pollhash["colorb"] %>;"><%= pct %></div></div></li>
                 <% j += 1 %>
                 <% astr = qstr + "a" + j.to_s %>
               <% end %>
             </ul>
             <% i += 1 %>
             <% qstr = "q" + i.to_s %>
+            </li>
           <% end %>
+        </div>
         </div>
         <div id="footer">
         </div>
