@@ -114,6 +114,22 @@ end
     @pollhash = REDIS.hgetall "poll:#{@poll}"
     @resultshash = REDIS.hgetall "results:#{@poll}"
     if @pollhash["topic"]
+      #construct totals for the questions
+      @totalshash = Hash.new
+      i = 1
+      qstr = "q" + i.to_s
+      while @pollhash[qstr]
+        j = 1
+        @totalshash[qstr] = "0"
+        astr = qstr + "a" + j.to_s
+        while @pollhash[astr]
+          @totalshash[qstr] = (@totalshash[qstr].to_i + @resultshash[astr].to_i).to_s
+          j += 1
+          astr = qstr + "a" + j.to_s
+        end
+        i += 1
+        qstr = "q" + i.to_s
+      end
       erb :results
     else
       erb :resultserror
